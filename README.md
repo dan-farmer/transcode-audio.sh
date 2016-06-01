@@ -7,8 +7,10 @@ Creates a complete copy of a tree of audio files:
 - Any non-FLAC files (existing .ogg, mp3 audio, jpeg folder art, etc) are hard-linked for space-efficiency
 
 ## Usage
-`./transcode-audio.sh SOURCE-FOLDER DESTINATION-FOLDER`
-`./transcode-audio.sh --help`
+```
+./transcode-audio.sh SOURCE-FOLDER DESTINATION-FOLDER
+./transcode-audio.sh --help
+```
 
 ## Features
 - Transcodes to [vorbis/ogg](https://xiph.org/vorbis/) (default) or mp3 (option)

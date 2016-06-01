@@ -189,8 +189,8 @@ function transcode {
         fi
         TRANSCODE_RETURN=$?
         if [[ ! $TRANSCODE_RETURN = 0 ]]; then
-          # Fail if something went wrong with our transcode
-          log ERR "Error $TRANSCODE_RETURN when transcoding $SOURCE_FILE"
+          # Warn if something went wrong with our transcode
+          log WARN "Error $TRANSCODE_RETURN when transcoding $SOURCE_FILE"
           # Delete the partially-transcoded file
           log INFO "Deleting partial file $DEST_FILE_TRANS"
           rm -f "$DEST_FILE_TRANS"

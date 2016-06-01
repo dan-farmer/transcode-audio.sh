@@ -7,13 +7,11 @@ Creates a complete copy of a tree of audio files:
 - Any non-FLAC files (existing .ogg, mp3 audio, jpeg folder art, etc) are hard-linked for space-efficiency
 
 ## Usage
-./transcode-audio.sh SOURCE-FOLDER DESTINATION-FOLDER
-./transcode-audio.sh --help
-
-## Logical Operations
+`./transcode-audio.sh SOURCE-FOLDER DESTINATION-FOLDER`
+`./transcode-audio.sh --help`
 
 ## Features
-- Transcodes to vorbis/ogg (default) or mp3 (option)
+- Transcodes to [vorbis/ogg](https://xiph.org/vorbis/) (default) or mp3 (option)
 - Default flags to encoder binary can be overridden (e.g. different quality levels)
 - Audio metadata (tags) are copied to transcoded file - see 'Audio File Metadata' below for more information on fields
 - Any non-FLAC files (existing .ogg, mp3 audio, jpeg folder art, etc) are hard-linked for space-efficiency
@@ -28,7 +26,7 @@ Creates a complete copy of a tree of audio files:
 
 ## Requirements
 1. bash (version TBC) (makes moderate to heavy use of bashisms, won't execute with pure POSIX shells)
-2. For vorbis encoding (default), an 'oggenc' binary that is built against libFLAC.so
+2. For vorbis encoding (default), an 'oggenc' binary that is built against libFLAC.so. Your distribution's oggenc binary is likely suitable.
 3. For mp3 encoding, 'flac' and 'lame' binaries
 4. The filesystem must allow hard linking
 

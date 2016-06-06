@@ -201,9 +201,9 @@ function transcode {
     else
       # All other files get hard-linked, using the original file extension
       if [[ ! -e $DEST_FILE ]]; then
+        DEST_DIR=$(dirname "$DEST_FILE")
         if [[ ! -d "$DEST_DIR" ]]; then
           # If $DEST_DIR doesn't exist, create it as lame won't create for us
-          DEST_DIR=$(dirname "$DEST_FILE_TRANS")
           log INFO "Creating $DEST_DIR"
           mkdir -p "$DEST_DIR"
         fi

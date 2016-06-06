@@ -120,7 +120,7 @@ function checks {
     if ! which lame &>/dev/null; then
       echo "Couldn't find \'lame\' binary for requested mp3 transcoding" 1>&2
       exit 20
-    elif ! which flac &>/dev/null
+    elif ! which flac &>/dev/null; then
       # For mp3 transcoding, we also need the flac binary for decoding
       echo "Couldn't find \'flac\' binary (required for mp3 transcoding)" 1>&2
       exit 20

@@ -88,7 +88,7 @@ function handle_args {
   # If $ENCODER_OPTS hasn't been set, fill it with default values according to $TRANSCODE_FMT
   if [[ -z "$ENCODER_OPTS" ]]; then
     if [[ $TRANSCODE_FMT = "vorbis" ]]; then
-      ENCODER_OPTS="-q4"
+      ENCODER_OPTS="-q3"
     elif [[ $TRANSCODE_FMT = "mp3" ]]; then
       ENCODER_OPTS="-V 4 --noreplaygain"
     fi
@@ -276,7 +276,7 @@ function printhelp {
   echo "                                    Default: \"\\.flac\$\""
   echo "  -f <mp3|vorbis>                   Transcode format. Default: \"vorbis\""
   echo "  -o <options>                      Arguments to encoding binary"
-  echo "                                    Default for vorbis (oggenc): \"-q4\""
+  echo "                                    Default for vorbis (oggenc): \"-q3\""
   echo "                                    Default for mp3 (lame): \"-V 4 --noreplaygain\""
   echo "  -p                                Purge any files and directories in destination tree that"
   echo "                                    don\'t have a corresponding source file (currently not"

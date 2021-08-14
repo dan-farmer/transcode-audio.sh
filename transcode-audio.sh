@@ -39,8 +39,7 @@
 function main {
   handle_args "$@"  # Handle arguments, print help, exit if invalid
   checks            # Basic checks on source, dest path, encoder availability
-  lock              # Lock on a lockfile
-  if [[ $? -ne 0 ]]; then
+  if ! lock; then
     echo "Couldn't acquire lock on $LOCKFILE" 1>&2
     exit 3
   fi
@@ -60,11 +59,12 @@ function handle_args {
   PURGE=false
   LOCKFILE=/var/tmp/transcode-audio.lock
   # Overwrite defaults with command line args
-  while getopts ":hl:f:o:pL:" OPT; do
+  while getopts ":hl:f:o:pt:" OPT; do
+    # shellcheck disable=SC2034   # PURGE planned for future implementation
     case "$OPT" in
       h) printhelp;;
       t) TRANSCODE_LIST=$OPTARG;;
-      f) if ([[ $OPTARG = "vorbis" ]] || [[ $OPTARG = "mp3" ]]); then
+      f) if [[ $OPTARG = "vorbis" ]] || [[ $OPTARG = "mp3" ]]; then
            TRANSCODE_FMT="$OPTARG"
          else
            echo "Transcode format must be one of \"vorbis\" or \"mp3\"" 1>&2
@@ -80,7 +80,7 @@ function handle_args {
     esac
   done
   # Fail if we don't have exactly 2 arguments left for $SOURCE and $DEST
-  if [[ ! $(( $# - $OPTIND )) = 1 ]]; then
+  if [[ ! $(( $# - OPTIND )) = 1 ]]; then
     echo "Usage: $0 [OPTS] SRC DEST" 1>&2
     echo "$0 -h for more usage information" 1>&2
     exit 2
@@ -94,8 +94,8 @@ function handle_args {
     fi
   fi
   # Finally, set $SOURCE and $DEST from the last two (positional, non-optional) arguments
-  SOURCE=${@:$OPTIND:1}
-  DEST=${@:$OPTIND+1:1}
+  SOURCE=${*:$OPTIND:1}
+  DEST=${*:$OPTIND+1:1}
 }
 
 function checks {
@@ -129,7 +129,7 @@ function checks {
 }
 
 function lock {
-  exec 200>$LOCKFILE
+  exec 200>"$LOCKFILE"
   flock -n 200 && return 0 || return 1
 }
 
@@ -142,9 +142,9 @@ function transcode {
   FILES_LINKED=0
   FILES_TRANSCODED=0
   # Find all files in $SOURCE, loop over them
-  for SOURCE_FILE in $(find $SOURCE -type f | sort); do
+  for SOURCE_FILE in $(find "$SOURCE" -type f | sort); do
     DEST_FILE="${SOURCE_FILE/$SOURCE/$DEST}"
-    if (echo "$SOURCE_FILE" | egrep -q "$TRANSCODE_LIST"); then
+    if (echo "$SOURCE_FILE" | grep -Eq "$TRANSCODE_LIST"); then
       # If $SOURCE_FILE matches our regex of patterns (i.e. extensions) to
       # transcode, then transcode it.
       # Substitute the file extension as appropriate.
@@ -208,7 +208,7 @@ function transcode {
           mkdir -p "$DEST_DIR"
         fi
         log INFO "Linking $SOURCE_FILE"
-        ln $SOURCE_FILE $DEST_FILE
+        ln "$SOURCE_FILE" "$DEST_FILE"
         ((FILES_LINKED++))
       fi
     fi
@@ -240,21 +240,21 @@ function log {
     RESET_STDERR_FMT='\e[0m'    # Unset formatting ctrl chars
   fi
   LOGTIME=$(/usr/bin/date "+%T" | /usr/bin/tr -d "\n")
-  if ([[ $1 == "ERR" ]] && [[ ! -z $2 ]] && [[ ! -t 1 ]]); then
+  if [[ $1 == "ERR" ]] && [[ -n $2 ]] && [[ ! -t 1 ]]; then
     # If stdout is a TTY, store control characters for pretty formatting in
     # variables. Otherwise, variables are empty so this won't make parsing logs
     # hard.
     echo -e "$LOGTIME ${ERR_STDERR_FMT}ERROR:${RESET_STDERR_FMT} $2" | \
       tee > /dev/stderr
-  elif ([[ $1 == "ERR" ]] && [[ ! -z $2 ]]); then
+  elif [[ $1 == "ERR" ]] && [[ -n $2 ]]; then
     # If stdout is a terminal, just send our errors to stderr
     echo -e "$LOGTIME ${ERR_STDERR_FMT}ERROR:${RESET_STDERR_FMT} $2" 1>&2
-  elif ([[ $1 == "WARN" ]] && [[ ! -z $2 ]] && [[ ! -t 1 ]]); then
+  elif [[ $1 == "WARN" ]] && [[ -n $2 ]] && [[ ! -t 1 ]]; then
     echo -e "$LOGTIME ${WARN_STDERR_FMT}WARN:${RESET_STDERR_FMT} $2" | \
       tee > /dev/stderr
-  elif ([[ $1 == "WARN" ]] && [[ ! -z $2 ]]); then
+  elif [[ $1 == "WARN" ]] && [[ -n $2 ]]; then
     echo -e "$LOGTIME ${WARN_STDERR_FMT}WARN:${RESET_STDERR_FMT} $2" 1>&2
-  elif ([[ $1 == "INFO" ]] && [[ ! -z $2 ]]); then
+  elif [[ $1 == "INFO" ]] && [[ -n $2 ]]; then
     echo -e "$LOGTIME ${INFO_STDOUT_FMT}INFO:${RESET_STDOUT_FMT} $2"
   else
     echo -e "$LOGTIME ${ERR_STDERR_FMT}ERROR:${RESET_STDERR_FMT} Logging err" \
@@ -289,10 +289,10 @@ function printhelp {
 function finish {
   DURATION=$SECONDS
   log INFO "$0 finishing at $(/usr/bin/date "+%F %T")"
-  log INFO "Time elapsed: $(($DURATION / 3600))h $(((($DURATION / 60)) % 60))m $(($DURATION % 60))s."
+  log INFO "Time elapsed: $((DURATION / 3600))h $((((DURATION / 60)) % 60))m $((DURATION % 60))s."
   log INFO "Files examined/transcoded/linked: $FILES_EXAMINED / $FILES_TRANSCODED / $FILES_LINKED"
   if [[ -n $1 ]]; then
-    exit $1
+    exit "$1"
   else
     exit 1
   fi
